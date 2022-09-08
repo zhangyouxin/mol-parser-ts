@@ -1,0 +1,14 @@
+{
+  "name": "molecule-ts",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "zhangyouxin <zhangyouxingg@126.com>",
+  "license": "MIT",
+  "dependencies": {
+    "nearley": "^2.20.1",
+    "pegjs": "^0.10.0"
+  },
+  "devDependencies": {
+    "typescript": "^4.8.2"
+  }
+}
