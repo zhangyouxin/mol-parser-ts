@@ -29,7 +29,7 @@ const lexer = moo.compile({
         value: s => Number(s)
     },
     identifier: {
-        match: /[a-z_][a-z_0-9]*/,
+        match: /[a-z_A-Z][a-z_A-Z_0-9]*/,
         type: moo.keywords({
             array: "array",
             vector: "vector",
@@ -105,21 +105,26 @@ top_level_statement
 
 
 array_definition
-    -> "array" __ identifier _ lbracket _ identifier _ semicolon _ number _ rbracket _ semicolon
-        {%
-            d => ({
-                type: "array_definition",
-                name: d
-               'gh
-               handlehhh [2],
-            })hnn      
-        %}
+    -> "array" __ identifier _ %lbracket _ identifier _ %semicolon _ number _ %rbracket _ %semicolon
+        {% convertTokenId %}
 
 vector_definition
-    -> "array" __ identifier _ lbracket _ identifier _ semicolon _ number _ rbracket _ semicolon
-        {%
-            d => ({
-                type: "array_definition",
-                name: d[2],
-            })
-        %}
+    -> "vector"
+
+line_comment -> %comment {% convertTokenId %}
+
+string_literal -> %string_literal {% convertTokenId %}
+
+number -> %number_literal {% convertTokenId %}
+
+identifier -> %identifier {% convertTokenId %}
+
+_ml -> multi_line_ws_char:*
+
+multi_line_ws_char
+    -> %ws
+    |  "\n"
+
+__ -> %ws:+
+
+_ -> %ws:*

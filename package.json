@@ -5,6 +5,7 @@
   "author": "zhangyouxin <zhangyouxingg@126.com>",
   "license": "MIT",
   "dependencies": {
+    "moo": "^0.5.1",
     "nearley": "^2.20.1",
     "pegjs": "^0.10.0"
   },
