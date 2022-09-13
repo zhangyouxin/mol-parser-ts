@@ -20,9 +20,13 @@ const lexer = moo.compile({
     assignment: "=",
     colon: ":",
     semicolon: ";",
-    comment: {
-        match: /#[^\n]*/,
+    line_comment: {
+        match: /\/\/[^\n]*/,
         value: s => s.substring(1)
+    },
+    block_comment: {
+        match: /\/\*[\w\d\s\n\t\r]*\*\//,
+        value: s => (s.substring(1))
     },
     string_literal: {
         match: /"(?:[^\n\\"]|\\["\\ntbfr])*"/,
@@ -38,7 +42,7 @@ const lexer = moo.compile({
             array: "array",
             vector: "vector",
             struct: "struct",
-            tablle: "tablle",
+            tablle: "table",
         })
     }
 });
@@ -100,7 +104,9 @@ var grammar = {
     {"name": "top_level_statement", "symbols": ["union_definition"], "postprocess": id},
     {"name": "top_level_statement", "symbols": ["struct_definition"], "postprocess": id},
     {"name": "top_level_statement", "symbols": ["table_definition"], "postprocess": id},
-    {"name": "array_definition", "symbols": [{"literal":"array"}, "__", "identifier", "_", "lbracket", "_", "identifier", "_", "semicolon", "_", "number", "_", "rbracket", "_", "semicolon"], "postprocess":  
+    {"name": "top_level_statement", "symbols": ["line_comment"], "postprocess": () => null},
+    {"name": "top_level_statement", "symbols": ["block_comment"], "postprocess": () => null},
+    {"name": "array_definition", "symbols": [{"literal":"array"}, "__", "identifier", "_", "lbracket", "_", "identifier", "_", "semicolon", "_", "number", "_", "rbracket", "_", "semicolon", "_", "comment_opt"], "postprocess":  
         function(data) {
             return {
                 type: "array",
@@ -110,7 +116,7 @@ var grammar = {
             };
         }
                 },
-    {"name": "vector_definition", "symbols": [{"literal":"vector"}, "__", "identifier", "_", "labracket", "_", "identifier", "_", "rabracket", "_", "semicolon"], "postprocess":  
+    {"name": "vector_definition", "symbols": [{"literal":"vector"}, "__", "identifier", "_", "labracket", "_", "identifier", "_", "rabracket", "_", "semicolon", "_", "comment_opt"], "postprocess":  
         function(data) {
             return {
                 type: "vector",
@@ -119,7 +125,7 @@ var grammar = {
             };
         }
                 },
-    {"name": "option_definition", "symbols": [{"literal":"option"}, "__", "identifier", "_", "lparan", "_", "identifier", "_", "rparan", "_", "semicolon"], "postprocess":  
+    {"name": "option_definition", "symbols": [{"literal":"option"}, "__", "identifier", "_", "lparan", "_", "identifier", "_", "rparan", "_", "semicolon", "_", "comment_opt"], "postprocess":  
         function(data) {
             return {
                 type: "option",
@@ -128,14 +134,14 @@ var grammar = {
             };
         }
                 },
-    {"name": "union_definition$ebnf$1$subexpression$1", "symbols": ["multi_line_ws_char", "_", "identifier", "_", "comma", "_", "multi_line_ws_char"]},
+    {"name": "union_definition$ebnf$1$subexpression$1", "symbols": ["multi_line_ws_char", "_", "identifier", "_", "comma", "_", "comment_opt", "_", "multi_line_ws_char"]},
     {"name": "union_definition$ebnf$1", "symbols": ["union_definition$ebnf$1$subexpression$1"]},
-    {"name": "union_definition$ebnf$1$subexpression$2", "symbols": ["multi_line_ws_char", "_", "identifier", "_", "comma", "_", "multi_line_ws_char"]},
+    {"name": "union_definition$ebnf$1$subexpression$2", "symbols": ["multi_line_ws_char", "_", "identifier", "_", "comma", "_", "comment_opt", "_", "multi_line_ws_char"]},
     {"name": "union_definition$ebnf$1", "symbols": ["union_definition$ebnf$1", "union_definition$ebnf$1$subexpression$2"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "union_definition", "symbols": [{"literal":"union"}, "__", "identifier", "_", "lbrace", "_", "union_definition$ebnf$1", "_", "rbrace"], "postprocess":  
         function(data) {
             return {
-                type: "option",
+                type: "union",
                 name: data[2].value,
                 items:  data[6].map(d => d[2].value),
             };
@@ -153,18 +159,22 @@ var grammar = {
     {"name": "table_definition", "symbols": [{"literal":"table"}, "__", "identifier", "_", "block_definition"], "postprocess":  
         function(data) {
             return {
-                type: "struct",
+                type: "table",
                 name: data[2].value,
                 fields:  data[4][2].map(d => ({name: d[2].value, type: d[6].value})),
             };
         }
                 },
-    {"name": "block_definition$ebnf$1$subexpression$1", "symbols": ["multi_line_ws_char", "_", "identifier", "_", "colon", "_", "identifier", "_", "comma", "_", "multi_line_ws_char"]},
+    {"name": "block_definition$ebnf$1$subexpression$1", "symbols": ["multi_line_ws_char", "_", "identifier", "_", "colon", "_", "identifier", "_", "comma", "_", "comment_opt", "_", "multi_line_ws_char"]},
     {"name": "block_definition$ebnf$1", "symbols": ["block_definition$ebnf$1$subexpression$1"]},
-    {"name": "block_definition$ebnf$1$subexpression$2", "symbols": ["multi_line_ws_char", "_", "identifier", "_", "colon", "_", "identifier", "_", "comma", "_", "multi_line_ws_char"]},
+    {"name": "block_definition$ebnf$1$subexpression$2", "symbols": ["multi_line_ws_char", "_", "identifier", "_", "colon", "_", "identifier", "_", "comma", "_", "comment_opt", "_", "multi_line_ws_char"]},
     {"name": "block_definition$ebnf$1", "symbols": ["block_definition$ebnf$1", "block_definition$ebnf$1$subexpression$2"], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "block_definition", "symbols": ["lbrace", "_", "block_definition$ebnf$1", "_", "rbrace"]},
-    {"name": "line_comment", "symbols": [(lexer.has("comment") ? {type: "comment"} : comment)], "postprocess": convertTokenId},
+    {"name": "comment_opt", "symbols": ["line_comment"]},
+    {"name": "comment_opt", "symbols": ["block_comment"]},
+    {"name": "comment_opt", "symbols": [], "postprocess": () => ([])},
+    {"name": "line_comment", "symbols": [(lexer.has("line_comment") ? {type: "line_comment"} : line_comment)], "postprocess": id},
+    {"name": "block_comment", "symbols": [(lexer.has("block_comment") ? {type: "block_comment"} : block_comment)], "postprocess": id},
     {"name": "string_literal", "symbols": [(lexer.has("string_literal") ? {type: "string_literal"} : string_literal)], "postprocess": convertTokenId},
     {"name": "number", "symbols": [(lexer.has("number_literal") ? {type: "number_literal"} : number_literal)], "postprocess": convertTokenId},
     {"name": "lbracket", "symbols": [(lexer.has("lbracket") ? {type: "lbracket"} : lbracket)], "postprocess": convertTokenId},

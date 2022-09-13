@@ -18,9 +18,13 @@ const lexer = moo.compile({
     assignment: "=",
     colon: ":",
     semicolon: ";",
-    comment: {
-        match: /#[^\n]*/,
+    line_comment: {
+        match: /\/\/[^\n]*/,
         value: s => s.substring(1)
+    },
+    block_comment: {
+        match: /\/\*[\w\d\s\n\t\r]*\*\//,
+        value: s => (s.substring(1))
     },
     string_literal: {
         match: /"(?:[^\n\\"]|\\["\\ntbfr])*"/,
@@ -36,7 +40,7 @@ const lexer = moo.compile({
             array: "array",
             vector: "vector",
             struct: "struct",
-            tablle: "tablle",
+            tablle: "table",
         })
     }
 });
@@ -108,9 +112,11 @@ top_level_statement
     |  union_definition  {% id %}
     |  struct_definition  {% id %}
     |  table_definition  {% id %}
+    |  line_comment     {% () => null %}
+    |  block_comment     {% () => null %}
 
 array_definition
-    -> "array" __ identifier _ lbracket _ identifier _ semicolon _ number _ rbracket _ semicolon
+    -> "array" __ identifier _ lbracket _ identifier _ semicolon _ number _ rbracket _ semicolon _ comment_opt
         {% 
             function(data) {
                 return {
@@ -123,7 +129,7 @@ array_definition
         %}
 
 vector_definition
-     -> "vector" __ identifier _ labracket _ identifier _ rabracket _ semicolon
+     -> "vector" __ identifier _ labracket _ identifier _ rabracket _ semicolon _ comment_opt
         {% 
             function(data) {
                 return {
@@ -135,7 +141,7 @@ vector_definition
         %}
 
 option_definition
-     -> "option" __ identifier _ lparan _ identifier _ rparan _ semicolon
+     -> "option" __ identifier _ lparan _ identifier _ rparan _ semicolon _ comment_opt
         {% 
             function(data) {
                 return {
@@ -147,11 +153,11 @@ option_definition
         %}
 
 union_definition
-     -> "union" __ identifier _ lbrace _ (multi_line_ws_char _ identifier _ comma _ multi_line_ws_char):+  _ rbrace
+     -> "union" __ identifier _ lbrace _ (multi_line_ws_char _ identifier _ comma _ comment_opt _ multi_line_ws_char):+  _ rbrace
         {% 
             function(data) {
                 return {
-                    type: "option",
+                    type: "union",
                     name: data[2].value,
                     items:  data[6].map(d => d[2].value),
                 };
@@ -175,7 +181,7 @@ table_definition
         {% 
             function(data) {
                 return {
-                    type: "struct",
+                    type: "table",
                     name: data[2].value,
                     fields:  data[4][2].map(d => ({name: d[2].value, type: d[6].value})),
                 };
@@ -183,9 +189,11 @@ table_definition
         %}
 
 block_definition
-     -> lbrace _ (multi_line_ws_char _ identifier _ colon _ identifier _ comma _ multi_line_ws_char):+  _ rbrace
+     -> lbrace _ (multi_line_ws_char _ identifier _ colon _ identifier _ comma _ comment_opt _ multi_line_ws_char):+  _ rbrace
 
-line_comment -> %comment {% convertTokenId %}
+comment_opt -> line_comment | block_comment | null {% () => ([]) %}
+line_comment -> %line_comment {% id %}
+block_comment -> %block_comment {% id %}
 string_literal -> %string_literal {% convertTokenId %}
 number -> %number_literal {% convertTokenId %}
 lbracket -> %lbracket {% convertTokenId %}
