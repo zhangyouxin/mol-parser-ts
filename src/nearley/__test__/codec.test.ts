@@ -1,139 +1,19 @@
-import { createParser } from "../";
+import { toMolTypeMap } from "./../utils";
+import { MolType } from "./../type";
+import { createCodecMap } from "../codec";
 
-describe("test parse", () => {
-  it("should parse sample", () => {
-    const parser = createParser();
-    const result = parser.parse(`
-      /* Basic Types */
-      array Uint8 [byte; 1]; // one byte Uint
-    `);
-    expect(result).toEqual([
+describe("test codec", () => {
+  it("should pack sample", () => {
+    const ast: MolType[] = [
       { item: "byte", item_count: 1, name: "Uint8", type: "array" },
-    ]);
+    ];
+    const codecMap = createCodecMap(toMolTypeMap(ast));
+    expect(codecMap.get("Uint8")!.unpack("0x01")).toEqual("0x01");
+    expect(codecMap.get("Uint8")!.unpack("0xff")).toEqual("0xff");
   });
-  it("should parse blockchain.mol", () => {
-    const parser = createParser();
+  it("should pack blockchain.mol", () => {
     // https://github.com/nervosnetwork/ckb/blob/5a7efe7a0b720de79ff3761dc6e8424b8d5b22ea/util/types/schemas/blockchain.mol
-    const result = parser.parse(`
-    /* Basic Types */
-
-    // as a byte array in little endian.
-    array Uint32 [byte; 4];
-    array Uint64 [byte; 8];
-    array Uint128 [byte; 16];
-    array Byte32 [byte; 32];
-    array Uint256 [byte; 32];
-
-    vector Bytes <byte>;
-    option BytesOpt (Bytes);
-
-    vector BytesVec <Bytes>;
-    vector Byte32Vec <Byte32>;
-
-    /* Types for Chain */
-
-    option ScriptOpt (Script);
-
-    array ProposalShortId [byte; 10];
-
-    vector UncleBlockVec <UncleBlock>;
-    vector TransactionVec <Transaction>;
-    vector ProposalShortIdVec <ProposalShortId>;
-    vector CellDepVec <CellDep>;
-    vector CellInputVec <CellInput>;
-    vector CellOutputVec <CellOutput>;
-
-    table Script {
-        code_hash:      Byte32,
-        hash_type:      byte,
-        args:           Bytes,
-    }
-
-    struct OutPoint {
-        tx_hash:        Byte32,
-        index:          Uint32,
-    }
-
-    struct CellInput {
-        since:           Uint64,
-        previous_output: OutPoint,
-    }
-
-    table CellOutput {
-        capacity:       Uint64,
-        lock:           Script,
-        type_:          ScriptOpt,
-    }
-
-    struct CellDep {
-        out_point:      OutPoint,
-        dep_type:       byte,
-    }
-
-    table RawTransaction {
-        version:        Uint32,
-        cell_deps:      CellDepVec,
-        header_deps:    Byte32Vec,
-        inputs:         CellInputVec,
-        outputs:        CellOutputVec,
-        outputs_data:   BytesVec,
-    }
-
-    table Transaction {
-        raw:            RawTransaction,
-        witnesses:      BytesVec,
-    }
-
-    struct RawHeader {
-        version:                Uint32,
-        compact_target:         Uint32,
-        timestamp:              Uint64,
-        number:                 Uint64,
-        epoch:                  Uint64,
-        parent_hash:            Byte32,
-        transactions_root:      Byte32,
-        proposals_hash:         Byte32,
-        extra_hash:             Byte32,
-        dao:                    Byte32,
-    }
-
-    struct Header {
-        raw:                    RawHeader,
-        nonce:                  Uint128,
-    }
-
-    table UncleBlock {
-        header:                 Header,
-        proposals:              ProposalShortIdVec,
-    }
-
-    table Block {
-        header:                 Header,
-        uncles:                 UncleBlockVec,
-        transactions:           TransactionVec,
-        proposals:              ProposalShortIdVec,
-    }
-
-    table BlockV1 {
-        header:                 Header,
-        uncles:                 UncleBlockVec,
-        transactions:           TransactionVec,
-        proposals:              ProposalShortIdVec,
-        extension:              Bytes,
-    }
-
-    table CellbaseWitness {
-        lock:    Script,
-        message: Bytes,
-    }
-
-    table WitnessArgs {
-        lock:                   BytesOpt,          // Lock args
-        input_type:             BytesOpt,          // Type args for input
-        output_type:            BytesOpt,          // Type args for output
-    }
-    `);
-    expect(result).toEqual([
+    const ast: MolType[] = [
       { type: "array", name: "Uint32", item: "byte", item_count: 4 },
       { type: "array", name: "Uint64", item: "byte", item_count: 8 },
       { type: "array", name: "Uint128", item: "byte", item_count: 16 },
@@ -143,14 +23,8 @@ describe("test parse", () => {
       { type: "option", name: "BytesOpt", item: "Bytes" },
       { type: "vector", name: "BytesVec", item: "Bytes" },
       { type: "vector", name: "Byte32Vec", item: "Byte32" },
-      { type: "option", name: "ScriptOpt", item: "Script" },
       { type: "array", name: "ProposalShortId", item: "byte", item_count: 10 },
-      { type: "vector", name: "UncleBlockVec", item: "UncleBlock" },
-      { type: "vector", name: "TransactionVec", item: "Transaction" },
       { type: "vector", name: "ProposalShortIdVec", item: "ProposalShortId" },
-      { type: "vector", name: "CellDepVec", item: "CellDep" },
-      { type: "vector", name: "CellInputVec", item: "CellInput" },
-      { type: "vector", name: "CellOutputVec", item: "CellOutput" },
       {
         type: "table",
         name: "Script",
@@ -160,6 +34,7 @@ describe("test parse", () => {
           { name: "args", type: "Bytes" },
         ],
       },
+      { type: "option", name: "ScriptOpt", item: "Script" },
       {
         type: "struct",
         name: "OutPoint",
@@ -176,6 +51,7 @@ describe("test parse", () => {
           { name: "previous_output", type: "OutPoint" },
         ],
       },
+      { type: "vector", name: "CellInputVec", item: "CellInput" },
       {
         type: "table",
         name: "CellOutput",
@@ -185,6 +61,7 @@ describe("test parse", () => {
           { name: "type_", type: "ScriptOpt" },
         ],
       },
+      { type: "vector", name: "CellOutputVec", item: "CellOutput" },
       {
         type: "struct",
         name: "CellDep",
@@ -193,6 +70,7 @@ describe("test parse", () => {
           { name: "dep_type", type: "byte" },
         ],
       },
+      { type: "vector", name: "CellDepVec", item: "CellDep" },
       {
         type: "table",
         name: "RawTransaction",
@@ -213,6 +91,7 @@ describe("test parse", () => {
           { name: "witnesses", type: "BytesVec" },
         ],
       },
+      { type: "vector", name: "TransactionVec", item: "Transaction" },
       {
         type: "struct",
         name: "RawHeader",
@@ -245,6 +124,7 @@ describe("test parse", () => {
           { name: "proposals", type: "ProposalShortIdVec" },
         ],
       },
+      { type: "vector", name: "UncleBlockVec", item: "UncleBlock" },
       {
         type: "table",
         name: "Block",
@@ -283,6 +163,19 @@ describe("test parse", () => {
           { name: "output_type", type: "BytesOpt" },
         ],
       },
-    ]);
+    ];
+    const codecMap = createCodecMap(toMolTypeMap(ast));
+    expect(
+      codecMap
+        .get("Script")!
+        .unpack(
+          "0x3d0000001000000030000000310000009bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce80108000000aabbccdd44332211"
+        )
+    ).toEqual({
+      args: "0xaabbccdd44332211",
+      code_hash:
+        "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8",
+      hash_type: "0x01",
+    });
   });
 });

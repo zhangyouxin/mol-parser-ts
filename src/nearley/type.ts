@@ -1,5 +1,7 @@
 import { AnyCodec } from "@ckb-lumos/codec/lib/base";
 
+export const byte = "byte";
+
 type BaseType = {
   name: string;
   item: string;
