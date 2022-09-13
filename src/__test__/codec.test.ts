@@ -3,6 +3,15 @@ import { MolType } from "./../type";
 import { createCodecMap } from "../codec";
 
 describe("test codec", () => {
+  it("should throw error", () => {
+    const ast: MolType[] = [
+      { item: "Uint8", item_count: 2, name: "myType", type: "array" },
+      { item: "byte", item_count: 1, name: "Uint8", type: "array" },
+    ];
+    expect(() => {
+      createCodecMap(toMolTypeMap(ast))
+    }).toThrowError(/does not exist/);
+  });
   it("should pack sample", () => {
     const ast: MolType[] = [
       { item: "byte", item_count: 1, name: "Uint8", type: "array" },

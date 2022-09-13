@@ -94,7 +94,5 @@ export const createCodecMap = (molTypeMap: MolTypeMap): CodecMap => {
     nonNull(codec)
     result.set(entry[0], codec)
   }
-  console.log(result);
-  
   return result;
 }
