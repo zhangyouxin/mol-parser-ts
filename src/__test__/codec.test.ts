@@ -3,15 +3,6 @@ import { MolType } from "./../type";
 import { createCodecMap } from "../codec";
 
 describe("test codec", () => {
-  it("should throw error", () => {
-    const ast: MolType[] = [
-      { item: "Uint8", item_count: 2, name: "myType", type: "array" },
-      { item: "byte", item_count: 1, name: "Uint8", type: "array" },
-    ];
-    expect(() => {
-      createCodecMap(toMolTypeMap(ast))
-    }).toThrowError(/does not exist/);
-  });
   it("should pack sample", () => {
     const ast: MolType[] = [
       { item: "byte", item_count: 1, name: "Uint8", type: "array" },
@@ -32,8 +23,14 @@ describe("test codec", () => {
       { type: "option", name: "BytesOpt", item: "Bytes" },
       { type: "vector", name: "BytesVec", item: "Bytes" },
       { type: "vector", name: "Byte32Vec", item: "Byte32" },
+      { type: "option", name: "ScriptOpt", item: "Script" },
       { type: "array", name: "ProposalShortId", item: "byte", item_count: 10 },
+      { type: "vector", name: "UncleBlockVec", item: "UncleBlock" },
+      { type: "vector", name: "TransactionVec", item: "Transaction" },
       { type: "vector", name: "ProposalShortIdVec", item: "ProposalShortId" },
+      { type: "vector", name: "CellDepVec", item: "CellDep" },
+      { type: "vector", name: "CellInputVec", item: "CellInput" },
+      { type: "vector", name: "CellOutputVec", item: "CellOutput" },
       {
         type: "table",
         name: "Script",
@@ -43,7 +40,6 @@ describe("test codec", () => {
           { name: "args", type: "Bytes" },
         ],
       },
-      { type: "option", name: "ScriptOpt", item: "Script" },
       {
         type: "struct",
         name: "OutPoint",
@@ -60,7 +56,6 @@ describe("test codec", () => {
           { name: "previous_output", type: "OutPoint" },
         ],
       },
-      { type: "vector", name: "CellInputVec", item: "CellInput" },
       {
         type: "table",
         name: "CellOutput",
@@ -70,7 +65,6 @@ describe("test codec", () => {
           { name: "type_", type: "ScriptOpt" },
         ],
       },
-      { type: "vector", name: "CellOutputVec", item: "CellOutput" },
       {
         type: "struct",
         name: "CellDep",
@@ -79,7 +73,6 @@ describe("test codec", () => {
           { name: "dep_type", type: "byte" },
         ],
       },
-      { type: "vector", name: "CellDepVec", item: "CellDep" },
       {
         type: "table",
         name: "RawTransaction",
@@ -100,7 +93,6 @@ describe("test codec", () => {
           { name: "witnesses", type: "BytesVec" },
         ],
       },
-      { type: "vector", name: "TransactionVec", item: "Transaction" },
       {
         type: "struct",
         name: "RawHeader",
@@ -133,7 +125,6 @@ describe("test codec", () => {
           { name: "proposals", type: "ProposalShortIdVec" },
         ],
       },
-      { type: "vector", name: "UncleBlockVec", item: "UncleBlock" },
       {
         type: "table",
         name: "Block",
