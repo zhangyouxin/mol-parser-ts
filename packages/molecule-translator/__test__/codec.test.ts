@@ -1,6 +1,6 @@
-import { toMolTypeMap } from "./../utils";
-import { MolType } from "./../type";
-import { createCodecMap } from "../codec";
+import { toMolTypeMap } from "../src/utils";
+import { MolType } from "../src/type";
+import { createCodecMap } from "../src/codec";
 import { BI } from "@ckb-lumos/bi";
 
 describe("test codec", () => {

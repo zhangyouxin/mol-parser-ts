@@ -1,4 +1,4 @@
-import { createParser } from "../";
+import { createParser } from "../src";
 
 describe("test parse", () => {
   it("should parse sample", () => {
