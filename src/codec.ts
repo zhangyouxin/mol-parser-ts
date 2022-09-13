@@ -67,7 +67,6 @@ export const createCodecMap = (molTypeMap: MolTypeMap): CodecMap => {
           if(field.type === byte) {
             tableCodecs[field.name] = createFixedHexBytesCodec(1)
           } else {
-            console.log(result, field);
             const itemMolType = result.get(field.type)!
             nonNull(itemMolType)
             tableCodecs[field.name] = itemMolType
