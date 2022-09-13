@@ -286,3 +286,10 @@ describe("test parse", () => {
     ]);
   });
 });
+
+
+{
+  Bytes: ...(Bytes codec),
+  Byte32: ...(Byte32 codec),
+  Script: ...(Script codec),
+}
