@@ -1,3 +1,5 @@
+import { AnyCodec } from "@ckb-lumos/codec/lib/base";
+
 type BaseType = {
   name: string;
   item: string;
@@ -44,6 +46,9 @@ export type MolType = Array | Vector | Option | Union | Struct | Table;
 
 // key is type name
 export type MolTypeMap = Map<string, MolType>;
+
+// key is type name
+export type CodecMap = Map<string, AnyCodec>;
 
 export interface Parser {
   parse(data: string): MolType[];

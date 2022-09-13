@@ -84,15 +84,15 @@ function convertTokenId(data) {
 input -> top_level_statements {% id %}
 
 top_level_statements
-    ->  top_level_statement
+    -> _ top_level_statement
         {%
-            d => [d[0]]
+            d => [d[1]]
         %}
-    |  top_level_statement _ "\n" _ top_level_statements
+    |  _ top_level_statement _ "\n" _ top_level_statements
         {%
             d => [
-                d[0],
-                ...d[4]
+                d[1],
+                ...d[5]
             ]
         %}
     # below 2 sub-rules handle blank lines
