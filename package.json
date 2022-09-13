@@ -11,6 +11,7 @@
     "format:fix": "prettier --write '**/*.{js,jsx,ts,tsx}'"
   },
   "dependencies": {
+    "@ckb-lumos/bi": "^0.19.0-alpha.1",
     "@ckb-lumos/codec": "^0.19.0-alpha.1",
     "@types/nearley": "^2.11.2",
     "moo": "^0.5.1",

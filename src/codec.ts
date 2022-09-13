@@ -3,7 +3,7 @@ import { array, byteVecOf, option, struct, table, union, vector } from '@ckb-lum
 import { createFixedHexBytesCodec } from '@ckb-lumos/codec/lib/blockchain';
 import { byte, CodecMap, MolType, MolTypeMap } from "./type";
 import { nonNull } from './utils';
-import { bytes } from '@ckb-lumos/codec';
+import { bytes, number } from '@ckb-lumos/codec';
 
 function createHexBytesCodec(): BytesCodec<string, BytesLike> {
   return createBytesCodec({
@@ -28,7 +28,33 @@ export const toCodec = ( key: string, molTypeMap: MolTypeMap, result: CodecMap):
   let codec = null
   switch (molType.type) {
     case "array":
-      if(molType.item === byte) {
+      if(molType.name.startsWith("Uint")) {
+        switch (molType.name) {
+          case "Uint8":
+            codec = number.Uint8
+            break;
+          case "Uint16":
+            codec = number.Uint16
+            break;
+          case "Uint32":
+            codec = number.Uint32
+            break;
+          case "Uint64":
+            codec = number.Uint64
+            break;
+          case "Uint128":
+            codec = number.Uint128
+            break;
+          case "Uint256":
+            codec = number.Uint256
+            break;
+          case "Uint512":
+            codec = number.Uint512
+            break;
+          default:
+            throw new Error(`Number codecs should be among Uint8,Uint8,Uint8,Uint8,Uint8,Uint8,Uint8 but got ${molType.name}.`);
+        }
+      }else if(molType.item === byte) {
         codec = createFixedHexBytesCodec(molType.item_count)
       } else {
         const itemMolType = toCodec(molType.item, molTypeMap, result)
