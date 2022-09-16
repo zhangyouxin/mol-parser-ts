@@ -1,6 +1,8 @@
 {
   "private": true,
   "scripts": {
+    "build": "lerna run build",
+    "clean": "rm -rf molecule-translator/lib && rm -rf molecule-hikari/build",
     "test": "lerna run test --parallel",
     "test:coverage": "jest --coverage",
     "format:check": "prettier --check '**/*.{js,jsx,ts,tsx}'",
